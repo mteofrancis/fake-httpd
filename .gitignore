@@ -4,7 +4,8 @@
 # Python 3's compiled bytecode
 __pycache__
 
-# Distribution files (source/wheel)
+# Distribution files (source, wheel etc.)
+build
 dist
 
 # Distribution metadata
