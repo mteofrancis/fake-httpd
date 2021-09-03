@@ -1,0 +1,11 @@
+# Vim's .swp files
+.*.swp
+
+# Python 3's compiled bytecode
+__pycache__
+
+# Distribution files (source/wheel)
+dist
+
+# Distribution metadata
+src/fake_httpd.egg-info
