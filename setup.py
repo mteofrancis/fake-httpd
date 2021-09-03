@@ -58,6 +58,11 @@ setuptools.setup(
   # Supported Python version
   python_requires = '>=3.8',
 
+  # Dependencies
+  install_requires = [
+    'mteo_util >= 0.0.2rc2',
+  ],
+
   # Entry points
   entry_points = {
     'console_scripts': [
