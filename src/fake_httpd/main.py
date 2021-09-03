@@ -239,7 +239,7 @@ class Connection:
     return self.socket.recv(size)
   ## }}}
 
-## class TcpSocket }}}
+## class Connection }}}
 
 ## {{{ class Request
 
