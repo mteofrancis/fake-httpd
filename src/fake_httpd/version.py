@@ -15,7 +15,7 @@ MINOR = 0
 PATCH = 2
 
 # Extra version information
-EXTRA = '-pre1'
+EXTRA = '-pre2'
 
 def get():
   return f'{MAJOR}.{MINOR}.{PATCH}{EXTRA}'
