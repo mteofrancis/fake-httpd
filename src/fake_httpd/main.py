@@ -38,7 +38,10 @@ import sys
 import pwd
 import grp
 
-from mteo_util import TcpSocket
+from mteo_util import (
+  Bitmask,
+  TcpSocket,
+)
 
 import socket
 
@@ -151,29 +154,6 @@ class LogLevel(enum.Enum):
   DEBUG   = 4
 
 ## class LogLevel }}}
-
-## {{{ class Bitmask
-
-class Bitmask:
-
-  _mask = None
-
-  def __init__(self):
-    self.reset()
-
-  def reset(self):
-    self._mask = 0
-
-  def set(self, bit):
-    self._mask |= bit
-
-  def clear(self, bit):
-    self._mask &= ~bit
-
-  def test(self, bit):
-    return self._mask & bit
-
-## class Bitmask }}}
 
 ## {{{ class Buffer
 
