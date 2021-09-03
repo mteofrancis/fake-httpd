@@ -38,6 +38,8 @@ import sys
 import pwd
 import grp
 
+from mteo_util import TcpSocket
+
 import socket
 
 import selectors
@@ -149,69 +151,6 @@ class LogLevel(enum.Enum):
   DEBUG   = 4
 
 ## class LogLevel }}}
-
-## {{{ class TcpSocket
-
-class TcpSocket:
-
-  # Instance of socket
-  _socket = None
-
-  # Underlying file descriptor
-  _fd = None
-
-  ## {{{ TcpSocket.__init__()
-  def __init__(self, sock=None):
-    if sock is None:
-      self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    else:
-      self._socket = sock
-
-    self._fd = self._socket.fileno()
-  ## }}}
-
-  ## {{{ TcpSocket.setblocking()
-  def setblocking(self, block=True):
-    self._socket.setblocking(block)
-  ## }}}
-
-  ## {{{ TcpSocket.bind()
-  def bind(self, address, port, reuse_addr=False):
-    if reuse_addr:
-      self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-    self._socket.bind((address, port))
-  ## }}}
-
-  ## {{{ TcpSocket.listen()
-  def listen(self, backlog=10):
-    self._socket.listen(backlog)
-  ## }}}
-
-  ## {{{ TcpSocket.accept()
-  def accept(self):
-    return self._socket.accept()
-  ## }}}
-
-  ## {{{ TcpSocket.recv()
-  def recv(self, size, flags=0):
-    if flags != 0:
-      return self._socket.recv(size)
-    else:
-      return self._socket.recv(size, flags)
-  ## }}}
-
-  ## {{{ TcpSocket.shutdown()
-  def shutdown(self, how=socket.SHUT_RDWR):
-    self._socket.shutdown(how)
-  ## }}}
-
-  ## {{{ TcpSocket.close()
-  def close(self):
-    self._socket.close()
-  ## }}}
-
-## class TcpSocket }}}
 
 ## {{{ class Bitmask
 
