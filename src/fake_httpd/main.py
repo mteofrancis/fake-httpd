@@ -123,10 +123,10 @@ def exit_handler(arg):
   fake_httpd = arg
 
   log_files = [
-    fake-httpd.main_log,
-    fake-httpd.error_log,
-    fake-httpd.debug_log,
-    fake-httpd.access_log,
+    fake_httpd.main_log,
+    fake_httpd.error_log,
+    fake_httpd.debug_log,
+    fake_httpd.access_log,
   ]
 
   fake_httpd.debug('closing log files')
