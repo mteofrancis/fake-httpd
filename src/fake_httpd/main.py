@@ -39,6 +39,7 @@ import pwd
 import grp
 
 from mteo_util import (
+  caller,
   Bitmask,
   ByteBuffer,
   TcpSocket,
@@ -79,11 +80,6 @@ CONNECTION_TIMEOUT = 30
 
 # List of handled signals
 caught_signals = []
-
-## {{{ func_name()
-def func_name(frame=1):
-  return sys._getframe(frame).f_code.co_name
-## }}}
 
 ## {{{ perr()
 def perr(s, end='\n', flush=True):
@@ -381,7 +377,7 @@ class FakeHttpd:
 
   ## {{{ FakeHttpd.debug()
   def debug(self, message):
-    perr(f'{PROG_NAME}: debug: {func_name(2)}(): {message}')
+    perr(f'{PROG_NAME}: debug: {caller(2)}(): {message}')
     self.log(LogLevel.DEBUG, message)
   ## }}}
 
@@ -453,7 +449,7 @@ class FakeHttpd:
     elif level == LogLevel.DEBUG:
       log_file = self.debug_log
     else:
-      die(f"calling function {func_name(2)}() called FakeHttpd.log() with invalid level argument")
+      die(f"calling function {caller(2)}() called FakeHttpd.log() with invalid level argument")
 
     if not log_file:
       # Logging not initialised yet
