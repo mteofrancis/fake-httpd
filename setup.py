@@ -60,7 +60,7 @@ setuptools.setup(
 
   # Dependencies
   install_requires = [
-    'mteo_util >= 0.0.2rc9',
+    'mteo_util >= 0.0.2rc11',
   ],
 
   # Entry points
