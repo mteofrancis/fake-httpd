@@ -43,6 +43,8 @@ from mteo_util import (
   index,
   perr,
   pout,
+  time_now,
+  time_diff,
   Bitmask,
   ByteBuffer,
   TcpSocket,
@@ -83,16 +85,6 @@ CONNECTION_TIMEOUT = 30
 
 # List of handled signals
 caught_signals = []
-
-## {{{ time_now()
-def time_now():
-  return int(time.time())
-## }}}
-
-## {{{ time_diff()
-def time_diff(t1, t2):
-  return t1 - t2
-## }}}
 
 ## {{{ random_uuid()
 def random_uuid():
@@ -625,7 +617,7 @@ class FakeHttpd:
     for fd, conn in self.connections.items():
       now = time_now()
       diff = time_diff(conn.expires, now)
-      if diff < 1:
+      if diff <= 0:
         self.debug(f'connection {conn} has expired')
         self.remove_connection(conn)
         delete.append(fd)
