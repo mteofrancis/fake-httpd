@@ -40,6 +40,7 @@ import grp
 
 from mteo_util import (
   caller,
+  index,
   perr,
   pout,
   Bitmask,
@@ -82,14 +83,6 @@ CONNECTION_TIMEOUT = 30
 
 # List of handled signals
 caught_signals = []
-
-## {{{ index()
-def index(s, needle):
-  try:
-    return s.index(needle)
-  except ValueError:
-    return -1
-## }}}
 
 ## {{{ time_now()
 def time_now():
