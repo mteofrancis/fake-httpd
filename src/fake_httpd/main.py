@@ -43,6 +43,7 @@ from mteo_util import (
   index,
   perr,
   pout,
+  random_uuid,
   time_now,
   time_diff,
   Bitmask,
@@ -85,12 +86,6 @@ CONNECTION_TIMEOUT = 30
 
 # List of handled signals
 caught_signals = []
-
-## {{{ random_uuid()
-def random_uuid():
-  with open('/proc/sys/kernel/random/uuid') as fp:
-    return fp.read().split('\n')[0]
-## }}}
 
 ## {{{ exit_handler()
 def exit_handler(arg):
