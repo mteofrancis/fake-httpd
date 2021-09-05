@@ -40,6 +40,8 @@ import grp
 
 from mteo_util import (
   caller,
+  perr,
+  pout,
   Bitmask,
   ByteBuffer,
   TcpSocket,
@@ -80,16 +82,6 @@ CONNECTION_TIMEOUT = 30
 
 # List of handled signals
 caught_signals = []
-
-## {{{ perr()
-def perr(s, end='\n', flush=True):
-  print(s, file=sys.stderr, end=end, flush=flush)
-## }}}
-
-## {{{ pout()
-def pout(s, end='\n', flush=True):
-  print(s, file=sys.stdout, end=end, flush=flush)
-## }}}
 
 ## {{{ index()
 def index(s, needle):
