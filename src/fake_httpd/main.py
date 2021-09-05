@@ -40,6 +40,7 @@ import grp
 
 from mteo_util import (
   Bitmask,
+  ByteBuffer,
   TcpSocket,
 )
 
@@ -155,32 +156,6 @@ class LogLevel(enum.Enum):
 
 ## class LogLevel }}}
 
-## {{{ class Buffer
-
-class Buffer:
-
-  _buf = None
-
-  def __init__(self):
-    self._buf = []
-
-  def append(self, buf):
-    self._buf.append(buf)
-
-  def size(self):
-    size = 0
-    for buf in self._buf:
-      size += len(buf)
-    return size
-
-  def get_bytes(self):
-    return b''.join(self._buf)
-
-  def get_str(self):
-    return self.get_bytes().decode('utf-8')
-
-## class Buffer }}}
-
 ## {{{ class Counter
 
 class Counter:
@@ -224,7 +199,7 @@ class Connection:
     self.socket = socket
     self.remote_addr = remote_addr
     self.remote_port = remote_port
-    self.buffer = Buffer()
+    self.buffer = ByteBuffer()
     self.expires = time_now() + CONNECTION_TIMEOUT
     self.expired = False
   ## }}}
@@ -565,7 +540,7 @@ class FakeHttpd:
       self.die(f'listen() failed: {ex}')
 
     # Make underlying socket non-blocking
-    self.listener.setblocking(False)
+    self.listener.blocking(False)
   ## }}}
 
   ## {{{ FakeHttpd.sanitise_env()
@@ -735,7 +710,7 @@ class FakeHttpd:
     conn.buffer.append(buf)
 
     try:
-      num_lines = conn.buffer.get_str().count('\r\n')
+      num_lines = conn.buffer.to_str().count('\r\n')
     except UnicodeDecodeError:
       # FIXME: this needs better handling
       return
@@ -745,7 +720,7 @@ class FakeHttpd:
     if num_lines < 1:
       return
 
-    complete = conn.buffer.get_str().endswith('\r\n')
+    complete = conn.buffer.to_str().endswith('\r\n')
     if not complete:
       return
 
@@ -757,7 +732,7 @@ class FakeHttpd:
   def process_request(self, conn):
     self.debug(f'processing request from {conn}')
 
-    complete = conn.buffer.get_str().endswith('\r\n')
+    complete = conn.buffer.to_str().endswith('\r\n')
     if not complete:
       self.debug('called with incomplete request, returning')
       return
@@ -769,7 +744,7 @@ class FakeHttpd:
         break
 
     request = Request(uuid, conn.remote_addr)
-    request.parse(conn.buffer.get_str())
+    request.parse(conn.buffer.to_str())
 
     self.log_request(request)
 
