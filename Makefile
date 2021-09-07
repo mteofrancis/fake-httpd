@@ -2,7 +2,6 @@ SHELL = /bin/bash
 
 FIND	= $(shell type -P find)
 RM	= $(shell type -P rm)
-PIP	= $(shell type -P pip)
 PYTHON	= $(shell type -P python)
 TWINE	= $(shell type -P twine)
 XARGS	= $(shell type -P xargs)
@@ -41,10 +40,6 @@ upload:
 .PHONY: install
 install:
 	@$(SUDO_WRAPPER) $(PYTHON) setup.py install
-
-.PHONY: uninstall
-uninstall:
-	@$(PIP) uninstall -y $(PACKAGE_NAME)
 
 .PHONY: clean
 clean:
