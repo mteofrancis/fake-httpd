@@ -11,8 +11,7 @@ SUDO_WRAPPER = $(shell pwd)/maint/sudo-wrapper
 PACKAGE_NAME = fake-httpd
 
 .PHONY: all
-all:
-	@$(PYTHON) -m build
+all: build
 
 .PHONY: check
 check: check-syntax run-testsuite
@@ -32,6 +31,10 @@ run-testsuite:
 	@echo "Running test suite..."
 	@echo
 	@$(PYTHON) setup.py nosetests
+
+.PHONY: build
+build:
+	@$(PYTHON) -m build
 
 .PHONY: upload
 upload:
