@@ -23,6 +23,7 @@ CRLF = b'\r\n'
 
 class TestRequest(unittest.TestCase):
 
+  ## {{{ TestRequest.test_invalid_requests()
   def test_invalid_requests(self):
     with self.assertRaisesRegex(RequestError, 'missing CRLF'):
       request = Request()
@@ -35,7 +36,9 @@ class TestRequest(unittest.TestCase):
     with self.assertRaises(RequestError):
       request = Request()
       request.parse(CRLF * 2)
+  ## }}}
 
+  ## {{{ TestRequest.test_garbage_request()
   def test_garbage_request(self):
     with self.assertRaisesRegex(RequestError, 'non-printable'):
       garbage = None
@@ -46,7 +49,9 @@ class TestRequest(unittest.TestCase):
 
       request = Request()
       request.parse(garbage + CRLF)
+  ## }}}
 
+  ## {{{ TestRequest.test_parse()
   def test_parse(self):
     buf = ByteBuffer(
       b'GET / HTTP/1.1\r\n' +
@@ -78,7 +83,9 @@ class TestRequest(unittest.TestCase):
     self.assertTrue('Accept' in request.headers)
     self.assertTrue('Accept-Encoding' in request.headers)
     self.assertTrue('Accept-Language' in request.headers)
+  ## }}}
 
+  ## {{{ TestRequest.test_parse_no_headers()
   def test_parse_no_headers(self):
     buf = b'GET / HTTP/1.1\r\n\r\n'
 
@@ -89,6 +96,7 @@ class TestRequest(unittest.TestCase):
     self.assertTrue(request.uri == '/')
     self.assertTrue(request.version == 'HTTP/1.1')
     self.assertTrue(len(request.headers) == 0)
+  ## }}}
 
 ##
 # vim: ts=2 sw=2 tw=100 et fdm=marker :
