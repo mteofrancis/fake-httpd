@@ -117,17 +117,22 @@ class Request:
     self.raw = buf
     self.length = len(buf)
 
-    #if not to_str(self.raw, 'ascii').isprintable():
-    #  raise RequestError('request contains non-printable characters')
-
-    if not self.raw.endswith(CRLF * 2):
-      raise RequestError('request incorrectly terminated')
+    if self.raw.count(CRLF) < 1:
+      raise RequestError('missing CRLF')
 
     request, headers = self.raw.split(CRLF, 1)
 
-    num_spaces = request.count(b' ')
-    if num_spaces != 2:
-      raise InvalidRequestError(f'request contains {num_spaces} seperators, 2 required')
+    try:
+      to_str(request)
+    except UnicodeError:
+      raise RequestError('request contains invalid/non-printable characters')
+
+    if not request:
+      raise InvalidRequestError(f'empty request line')
+    else:
+      num_spaces = request.count(b' ')
+      if num_spaces != 2:
+        raise InvalidRequestError(f'request contains {num_spaces} seperators, 2 required')
 
     method, uri, version = request.split(b' ')
 
@@ -150,8 +155,14 @@ class Request:
 
     parsed_headers = {}
     for header in headers.split(CRLF):
+      try:
+        to_str(header)
+      except UnicodeError:
+        raise RequestError('header contains invalid/non-printable characters')
+
       if header.count(b': ') < 1:
         raise InvalidHeaderError(header)
+
       name, value = header.split(b': ', 1)
       parsed_headers[to_str(name)] = to_str(value)
 

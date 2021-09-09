@@ -5,13 +5,47 @@
 # fake-httpd.git:/src/fake_httpd/tests/test_request.py
 ##
 
+import os
+
 import unittest
 
-from fake_httpd.request import Request
+from fake_httpd.request import (
+  Request,
+  RequestError,
+)
 
-from mteo_util import ByteBuffer
+from mteo_util import (
+  to_str,
+  ByteBuffer,
+)
+
+CRLF = b'\r\n'
 
 class TestRequest(unittest.TestCase):
+
+  def test_invalid_requests(self):
+    with self.assertRaisesRegex(RequestError, 'missing CRLF'):
+      request = Request()
+      request.parse(b'')
+
+    with self.assertRaises(RequestError):
+      request = Request()
+      request.parse(CRLF)
+
+    with self.assertRaises(RequestError):
+      request = Request()
+      request.parse(CRLF * 2)
+
+  def test_garbage_request(self):
+    with self.assertRaisesRegex(RequestError, 'non-printable'):
+      garbage = None
+      while True:
+        garbage = os.urandom(256)
+        if CRLF not in garbage:
+          break
+
+      request = Request()
+      request.parse(garbage + CRLF)
 
   def test_parse(self):
     buf = ByteBuffer(
