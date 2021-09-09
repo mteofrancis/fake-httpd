@@ -18,10 +18,22 @@ function die()
 }
 ## }}}
 
+cleanup_done=0
+
+function cleanup()
+{
+  [[ $cleanup_done -eq 1 ]] && return
+  cleanup_done=1
+  trap '' EXIT INT TERM
+  sudo-wrapper ./maint/test-uninstall || exit 1
+}
+
 [[ -f maint/$SCRIPT_NAME ]] \
   || die "this script needs to be run from the top-level source directory"
 
 export PATH="$(pwd)/maint:$PATH"
+
+trap cleanup EXIT INT TERM
 
 sudo-wrapper pip uninstall -y fake-httpd || die "pip uninstall failed"
 
@@ -30,6 +42,8 @@ sudo-wrapper make install || die "make install failed"
 sudo-wrapper rm -rf /var/lib/fake-httpd /var/log/fake-httpd
 
 sudo-wrapper fake-httpd
+
+cleanup
 
 ##
 # vim: ts=2 sw=2 et fdm=marker :
