@@ -32,6 +32,8 @@
 
 import configparser
 
+from mteo_util import to_str
+
 # Default configuration settings
 CONFIG_DEFAULTS = {
   'home_dir': '/var/lib/fake-httpd',
@@ -60,51 +62,79 @@ class ConfigError(Exception):
 
 class Config:
 
+  _parser = None
   _config = None
 
   ## {{{ Config.__init__()
   def __init__(self):
-    self._config = configparser.ConfigParser()
+    self._parser = configparser.ConfigParser()
+    self._config = {}
+  ## }}}
+
+  ## {{{ Config.__getitem__()
+  def __getitem__(self, key):
+    if key not in self._config:
+      raise KeyError(key)
+    return self._config[key]
+  ## }}}
+
+  ## {{{ Config.__setitem__()
+  def __setitem__(self, key, value):
+    self._config[key] = value
   ## }}}
 
   ## {{{ Config.from_dict()
   def from_dict(self, dict):
-    for key in dict:
-      if key in CONFIG_DEFAULTS.keys():
-        continue
-      raise ConfigError(f"invalid key '{key}'")
+    defaults = CONFIG_DEFAULTS
 
-    self._config['fake-httpd'] = {}
+    for key in dict:
+      if key not in defaults.keys():
+        raise ConfigError(f"invalid configuration setting '{key}'")
+
+      defaults_type = type(defaults[key]).__name__
+      dict_type = type(dict[key]).__name__
+      if defaults_type != dict_type:
+        raise ConfigError(f"{key}: invalid type (expecting {defaults_type}, got {dict_type}")
+
     for key, value in dict.items():
-      self._config['fake-httpd'][key] = str(value)
+      self._config[key] = value
+
+    for key, value in defaults.items():
+      if key in self._config:
+        continue
+      self._config[key] = value
   ## }}}
 
   ## {{{ Config.from_file()
   def from_file(self, path):
-    try:
-      self._config.read(path)
-    except configparser.Error as ex:
-      raise ConfigError(str(ex))
+    defaults = CONFIG_DEFAULTS
 
-    for section in self._config.sections():
+    try:
+      self._parser.read(path)
+    except configparser.Error as ex:
+      raise ConfigError(to_str(ex))
+
+    for section in self._parser.sections():
       if section == 'fake-httpd':
         continue
       raise ConfigError(f"{path}: invalid section '{section}'")
 
-    for key, value in CONFIG_DEFAULTS.items():
-      if key in self._config['fake-httpd']:
-        continue
-      self._config['fake-httpd'][key] = value
+    for key, value in defaults.items():
+      if key in self._parser['fake-httpd']:
+        config_value = self._parser['fake-httpd'][key]
+        defaults_type = type(defaults[key]).__name__
+        config_type = type(config_value).__name__
+        if defaults_type == 'int':
+          self._config[key] = int(config_value)
+        else:
+          self._config[key] = config_value
+      else:
+        self._config[key] = defaults[key]
   ## }}}
 
   ## {{{ Config.items()
   def items(self):
-    return self._config['fake-httpd'].items()
-  ## }}}
-
-  ## {{{ Config.get()
-  def get(self, name):
-    return self._config['fake-httpd'][name]
+    return self._config.items()
   ## }}}
 
 ## class Config }}}

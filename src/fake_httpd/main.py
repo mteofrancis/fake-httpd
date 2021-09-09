@@ -290,7 +290,7 @@ class FakeHttpd:
 
   ## {{{ FakeHttpd.init_logging()
   def init_logging(self):
-    log_dir = self.config.get('log_dir')
+    log_dir = self.config['log_dir']
     for path in [log_dir]:
       try:
         os.mkdir(path, 0o700)
@@ -312,7 +312,7 @@ class FakeHttpd:
     #
 
     # Set HOME to something accessible
-    home_dir = self.config.get('home_dir')
+    home_dir = self.config['home_dir']
     os.environ['HOME'] = home_dir
 
     if not os.path.isdir(home_dir):
@@ -322,7 +322,7 @@ class FakeHttpd:
         self.die(f'mkdir() failed: {ex}')
 
     st = os.stat(home_dir)
-    gid = grp.getgrnam(self.config.get('group')).gr_gid
+    gid = grp.getgrnam(self.config['group']).gr_gid
     if st.st_gid != gid:
       try:
         os.chown(home_dir, 0, gid)
@@ -374,15 +374,15 @@ class FakeHttpd:
 
     new_uid = None
     try:
-      new_uid = pwd.getpwnam(self.config.get('user')).pw_uid
+      new_uid = pwd.getpwnam(self.config['user']).pw_uid
     except KeyError as ex:
-      self.die(f"user {self.config.get('user')} not found in /etc/passwd")
+      self.die(f"user {self.config['user']} not found in /etc/passwd")
 
     new_gid = None
     try:
-      new_gid = grp.getgrnam(self.config.get('group')).gr_gid
+      new_gid = grp.getgrnam(self.config['group']).gr_gid
     except KeyError as ex:
-      self.die(f"group {self.config.get('group')} not found in /etc/group")
+      self.die(f"group {self.config['group']} not found in /etc/group")
 
     # Clear supplementary groups
     try:
@@ -562,7 +562,7 @@ class FakeHttpd:
   ## {{{ FakeHttpd.add_connection()
   def add_connection(self, socket, remote):
     fd = socket._fd
-    self.connections[fd] = Connection(socket, remote[0], remote[1], int(self.config.get('timeout')))
+    self.connections[fd] = Connection(socket, remote[0], remote[1], int(self.config['timeout']))
     self.io_selector.register(socket._socket, selectors.EVENT_READ)
     self.debug(f'added {self.connections[fd]}')
   ## }}}
