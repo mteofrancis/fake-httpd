@@ -9,7 +9,7 @@ import os
 
 import unittest
 
-from fake_httpd.config import (
+from ..config import (
   DEFAULT_CONFIG,
   Config,
   ConfigError,
