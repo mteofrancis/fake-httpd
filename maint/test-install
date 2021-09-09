@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Script filename
+SCRIPT_NAME="${0##*/}"
+
+## {{{ error()
+function error()
+{
+  echo >&2 "$SCRIPT_NAME: error:" "$@"
+}
+## }}}
+
+## {{{ die()
+function die()
+{
+  error "$@"
+  exit 1
+}
+## }}}
+
+[[ -f maint/$SCRIPT_NAME ]] \
+  || die "this script needs to be run from the top-level source directory"
+
+export PATH="$(pwd)/maint:$PATH"
+
+sudo-wrapper pip uninstall -y fake-httpd || die "pip uninstall failed"
+
+sudo-wrapper make install || die "make install failed"
+
+sudo-wrapper rm -rf /var/lib/fake-httpd /var/log/fake-httpd
+
+sudo-wrapper fake-httpd
+
+##
+# vim: ts=2 sw=2 et fdm=marker :
+##
