@@ -174,6 +174,8 @@ class Request:
 
     if self.headers:
       dict['headers'] = self.headers
+
+    return dict
   ## }}}
 
 ## }}}
