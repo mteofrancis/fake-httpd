@@ -331,22 +331,6 @@ class FakeHttpd:
         os.chown(home_dir, 0, gid)
       except OSError as ex:
         self.die(f'chown() failed: {ex}')
-
-    requests_dir = os.path.join(home_dir, 'requests')
-    if not os.path.isdir(requests_dir):
-      try:
-        os.mkdir(requests_dir, 0o700)
-      except OSError as ex:
-        self.die(f'mkdir() failed: {ex}')
-
-    st = os.stat(requests_dir)
-    uid = pwd.getpwnam('nobody').pw_uid
-    if st.st_uid != uid:
-      try:
-        # chwon nobody:root /var/lib/fake-httpd/requests
-        os.chown(requests_dir, uid, 0)
-      except OSError as ex:
-        self.die(f'chown() failed: {ex}')
   ## }}}
 
   ## {{{ FakeHttpd.log()
@@ -382,12 +366,6 @@ class FakeHttpd:
     time_stamp = datetime.utcnow().strftime('%H:%M:%S %Y/%m/%d %s')
     self.access_log.write(f'{time_stamp} {message}\n')
     self.access_log.flush()
-
-    requests_dir = os.path.join(self.config.get('home_dir'), 'requests')
-    request_log_file = f'{requests_dir}/{request.uuid}'
-    with open(request_log_file, 'wb') as fp:
-      jb = bytes(json.dumps(request.to_dict()), 'utf-8')
-      fp.write(lzma.compress(jb))
   ## }}}
 
   ## {{{ FakeHttpd.drop_privileges()
@@ -645,12 +623,6 @@ class FakeHttpd:
       self.debug('called with incomplete request, returning')
       return
 
-    uuid = None
-    while True:
-      uuid = random_uuid()
-      if self.uuid_is_unique(uuid):
-        break
-
     request = Request(uuid, conn.remote_addr)
     request.parse(conn.buffer.to_str())
 
@@ -668,20 +640,6 @@ class FakeHttpd:
     # from said users reaching us before they're added to the firewall's reject
     # list.
 
-  ## }}}
-
-  ## {{{ FakeHttpd.uuid_is_unique()
-  def uuid_is_unique(self, uuid):
-    # FIXME: this is perhaps too paranoid, but let's be 100% certain that the
-    # request UUID we're about to use is positively unique
-
-    requests_dir = os.path.join(os.environ['HOME'], 'requests')
-    request_log_file = f'{requests_dir}/{uuid}'
-    if os.path.isfile(request_log_file):
-      self.debug(f'{request_log_file}: file exists')
-      return False
-
-    return True
   ## }}}
 
 ## class FakeHttpd }}}
