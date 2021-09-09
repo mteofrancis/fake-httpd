@@ -63,7 +63,7 @@ from datetime import datetime
 import enum
 
 from .config import (
-  CONFIG_DEFAULTS,
+  DEFAULT_CONFIG,
   Config,
 )
 
@@ -282,7 +282,7 @@ class FakeHttpd:
     if os.path.isfile(CONFIG_FILE):
       self.config.from_file(CONFIG_FILE)
     else:
-      self.config.from_dict(CONFIG_DEFAULTS)
+      self.config.from_dict(DEFAULT_CONFIG)
 
     for name, value in self.config.items():
       self.debug(f"{name} = {value}")

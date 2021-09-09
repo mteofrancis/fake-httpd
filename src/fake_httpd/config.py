@@ -35,7 +35,7 @@ import configparser
 from mteo_util import to_str
 
 # Default configuration settings
-CONFIG_DEFAULTS = {
+DEFAULT_CONFIG = {
   'home_dir': '/var/lib/fake-httpd',
   'log_dir': '/var/log/fake-httpd',
   'bind_address': '0.0.0.0',
@@ -85,7 +85,7 @@ class Config:
 
   ## {{{ Config.from_dict()
   def from_dict(self, dict):
-    defaults = CONFIG_DEFAULTS
+    defaults = DEFAULT_CONFIG
 
     for key in dict:
       if key not in defaults.keys():
@@ -107,7 +107,7 @@ class Config:
 
   ## {{{ Config.from_file()
   def from_file(self, path):
-    defaults = CONFIG_DEFAULTS
+    defaults = DEFAULT_CONFIG
 
     try:
       self._parser.read(path)
