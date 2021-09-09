@@ -43,7 +43,6 @@ from mteo_util import (
   index,
   perr,
   pout,
-  random_uuid,
   time_now,
   time_diff,
   Bitmask,
@@ -68,7 +67,10 @@ from .config import (
   Config,
 )
 
-from .request import Request
+from .request import (
+  Request,
+  RequestError,
+)
 
 ## }}} ---- [ Imports ] ----------------------------------------------------------------------------
 
@@ -357,7 +359,7 @@ class FakeHttpd:
   def log_request(self, request):
     # FIXME: eventually we'll use the Apache access log format, but for now this will do
     #
-    message = request.raw.split('\r\n', 1)[0]
+    message = f'{request.method} {request.uri} {request.version}'
     time_stamp = datetime.utcnow().strftime('%H:%M:%S %Y/%m/%d %s')
     self.access_log.write(f'{time_stamp} {message}\n')
     self.access_log.flush()
@@ -618,13 +620,13 @@ class FakeHttpd:
       self.debug('called with incomplete request, returning')
       return
 
-    request = Request(uuid, conn.remote_addr)
-    request.parse(conn.buffer.to_str())
+    request = Request()
 
-    self.log_request(request)
-
-    if request.invalid:
-      self.debug(f'invalid request from {conn}')
+    try:
+      request.parse(conn.buffer.value())
+      self.log_request(request)
+    except RequestError as ex:
+      self.debug(f'received invalid request: {ex}')
 
     # We won't be reading from this socket again, so shutdown() the read side
     conn.socket.shutdown(socket.SHUT_RD)
