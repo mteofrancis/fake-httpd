@@ -61,10 +61,6 @@ import atexit
 import time
 from datetime import datetime
 
-import json
-
-import lzma
-
 import enum
 
 from .config import (
