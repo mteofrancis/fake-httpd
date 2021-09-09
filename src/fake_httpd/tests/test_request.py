@@ -9,7 +9,7 @@ import os
 
 import unittest
 
-from fake_httpd.request import (
+from ..request import (
   Request,
   RequestError,
 )
