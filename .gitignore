@@ -8,5 +8,6 @@ __pycache__
 build
 dist
 
-# Distribution metadata
+# Eggs
+.eggs
 src/fake_httpd.egg-info
