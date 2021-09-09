@@ -67,22 +67,18 @@ import lzma
 
 import enum
 
+from .config import (
+  CONFIG_DEFAULTS,
+  Config,
+)
+
 ## }}} ---- [ Imports ] ----------------------------------------------------------------------------
 
 # Program name
 PROG_NAME = os.path.basename(sys.argv[0])
 
-# HOME directory
-HOME_DIR = '/var/lib/fake-httpd'
-
-# Directory where we store compressed JSON-encoded Request objects
-REQUESTS_DIR = f'{HOME_DIR}/requests'
-
-# Top-level log directory
-LOG_DIR = '/var/log/fake-httpd'
-
-# Time in seconds to expire idle connections
-CONNECTION_TIMEOUT = 30
+# Configuration file
+CONFIG_FILE = '/etc/fake-httpd.conf'
 
 # List of handled signals
 caught_signals = []
@@ -163,12 +159,12 @@ class Connection:
   expired = None
 
   ## {{{ Connection.__init__()
-  def __init__(self, socket, remote_addr, remote_port):
+  def __init__(self, socket, remote_addr, remote_port, expires):
     self.socket = socket
     self.remote_addr = remote_addr
     self.remote_port = remote_port
     self.buffer = ByteBuffer()
-    self.expires = time_now() + CONNECTION_TIMEOUT
+    self.expires = time_now() + expires
     self.expired = False
   ## }}}
 
@@ -267,6 +263,8 @@ class Request:
 
 class FakeHttpd:
 
+  config = None
+
   listener = None
 
   main_log = None
@@ -283,6 +281,11 @@ class FakeHttpd:
 
   ## {{{ FakeHttpd.main()
   def main(self, argv=sys.argv):
+    self.info(f'pid {os.getpid()}, initialising...')
+
+    # Load configuration
+    self.init_config()
+
     # Create HOME with the correct permissions/ownership if it doesn't exist yet
     self.init_home()
 
@@ -291,8 +294,6 @@ class FakeHttpd:
 
     # Initialise logging
     self.init_logging()
-
-    self.info(f'pid {os.getpid()}, initialising...')
 
     # Create listener socket and bind to port 80
     self.create_listener()
@@ -353,9 +354,23 @@ class FakeHttpd:
     self.log(LogLevel.DEBUG, message)
   ## }}}
 
+  ## {{{ FakeHttpd.init_config()
+  def init_config(self):
+    self.config = Config()
+
+    if os.path.isfile(CONFIG_FILE):
+      self.config.from_file(CONFIG_FILE)
+    else:
+      self.config.from_dict(CONFIG_DEFAULTS)
+
+    for name, value in self.config.items():
+      self.debug(f"{name} = {value}")
+  ## }}}
+
   ## {{{ FakeHttpd.init_logging()
   def init_logging(self):
-    for path in [LOG_DIR]:
+    log_dir = self.config.get('log_dir')
+    for path in [log_dir]:
       try:
         os.mkdir(path, 0o700)
       except FileExistsError:
@@ -363,10 +378,10 @@ class FakeHttpd:
       except OSError as ex:
         self.die(f'mkdir() failed: {ex}')
 
-    self.main_log = open(f'{LOG_DIR}/main.log', 'a')
-    self.error_log = open(f'{LOG_DIR}/error.log', 'a')
-    self.debug_log = open(f'{LOG_DIR}/debug.log', 'a')
-    self.access_log = open(f'{LOG_DIR}/access.log', 'a')
+    self.main_log = open(f'{log_dir}/main.log', 'a')
+    self.error_log = open(f'{log_dir}/error.log', 'a')
+    self.debug_log = open(f'{log_dir}/debug.log', 'a')
+    self.access_log = open(f'{log_dir}/access.log', 'a')
   ## }}}
 
   ## {{{ FakeHttpd.init_home()
@@ -376,24 +391,25 @@ class FakeHttpd:
     #
 
     # Set HOME to something accessible
-    os.environ['HOME'] = HOME_DIR
+    home_dir = self.config.get('home_dir')
+    os.environ['HOME'] = home_dir
 
-    if not os.path.isdir(HOME_DIR):
+    if not os.path.isdir(home_dir):
       try:
-        os.mkdir(HOME_DIR, 0o750)
+        os.mkdir(home_dir, 0o750)
       except OSError as ex:
         self.die(f'mkdir() failed: {ex}')
 
-    st = os.stat(HOME_DIR)
+    st = os.stat(home_dir)
     gid = grp.getgrnam('nogroup').gr_gid
     if st.st_gid != gid:
       try:
         # chwon root:nobody /var/lib/fake-httpd
-        os.chown(HOME_DIR, 0, gid)
+        os.chown(home_dir, 0, gid)
       except OSError as ex:
         self.die(f'chown() failed: {ex}')
 
-    requests_dir = REQUESTS_DIR
+    requests_dir = os.path.join(home_dir, 'requests')
     if not os.path.isdir(requests_dir):
       try:
         os.mkdir(requests_dir, 0o700)
@@ -444,7 +460,8 @@ class FakeHttpd:
     self.access_log.write(f'{time_stamp} {message}\n')
     self.access_log.flush()
 
-    request_log_file = f'{REQUESTS_DIR}/{request.uuid}'
+    requests_dir = os.path.join(self.config.get('home_dir'), 'requests')
+    request_log_file = f'{requests_dir}/{request.uuid}'
     with open(request_log_file, 'wb') as fp:
       jb = bytes(json.dumps(request.to_dict()), 'utf-8')
       fp.write(lzma.compress(jb))
@@ -647,7 +664,7 @@ class FakeHttpd:
   ## {{{ FakeHttpd.add_connection()
   def add_connection(self, socket, remote):
     fd = socket._fd
-    self.connections[fd] = Connection(socket, remote[0], remote[1])
+    self.connections[fd] = Connection(socket, remote[0], remote[1], int(self.config.get('timeout')))
     self.io_selector.register(socket._socket, selectors.EVENT_READ)
     self.debug(f'added {self.connections[fd]}')
   ## }}}
@@ -735,7 +752,8 @@ class FakeHttpd:
     # FIXME: this is perhaps too paranoid, but let's be 100% certain that the
     # request UUID we're about to use is positively unique
 
-    request_log_file = f'{REQUESTS_DIR}/{uuid}'
+    requests_dir = os.path.join(os.environ['HOME'], 'requests')
+    request_log_file = f'{requests_dir}/{uuid}'
     if os.path.isfile(request_log_file):
       self.debug(f'{request_log_file}: file exists')
       return False
