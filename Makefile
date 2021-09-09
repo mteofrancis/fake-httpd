@@ -6,8 +6,6 @@ PYTHON	= $(shell type -P python)
 TWINE	= $(shell type -P twine)
 XARGS	= $(shell type -P xargs)
 
-SUDO_WRAPPER = $(shell pwd)/maint/sudo-wrapper
-
 PACKAGE_NAME = fake-httpd
 
 .PHONY: all
@@ -42,7 +40,7 @@ upload:
 
 .PHONY: install
 install:
-	@$(SUDO_WRAPPER) $(PYTHON) setup.py install
+	@$(PYTHON) setup.py install
 
 .PHONY: clean
 clean:
