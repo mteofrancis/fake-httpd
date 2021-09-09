@@ -320,10 +320,9 @@ class FakeHttpd:
         self.die(f'mkdir() failed: {ex}')
 
     st = os.stat(home_dir)
-    gid = grp.getgrnam('nogroup').gr_gid
+    gid = grp.getgrnam(self.config.get('group')).gr_gid
     if st.st_gid != gid:
       try:
-        # chwon root:nobody /var/lib/fake-httpd
         os.chown(home_dir, 0, gid)
       except OSError as ex:
         self.die(f'chown() failed: {ex}')
@@ -373,15 +372,15 @@ class FakeHttpd:
 
     new_uid = None
     try:
-      new_uid = pwd.getpwnam('nobody').pw_uid
+      new_uid = pwd.getpwnam(self.config.get('user')).pw_uid
     except KeyError as ex:
-      self.die(f'user nobody not found in /etc/passwd')
+      self.die(f"user {self.config.get('user')} not found in /etc/passwd")
 
     new_gid = None
     try:
-      new_gid = grp.getgrnam('nogroup').gr_gid
+      new_gid = grp.getgrnam(self.config.get('group')).gr_gid
     except KeyError as ex:
-      self.die(f'group nogroup not found in /etc/group')
+      self.die(f"group {self.config.get('group')} not found in /etc/group")
 
     # Clear supplementary groups
     try:
