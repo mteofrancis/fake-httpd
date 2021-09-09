@@ -8,8 +8,10 @@ XARGS	= $(shell type -P xargs)
 
 PACKAGE_NAME = fake-httpd
 
+ALL_TARGETS = build
+
 .PHONY: all
-all: build
+all: $(ALL_TARGETS)
 
 .PHONY: check
 check: check-syntax run-testsuite
