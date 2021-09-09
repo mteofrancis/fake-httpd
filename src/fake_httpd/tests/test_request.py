@@ -55,6 +55,7 @@ class TestRequest(unittest.TestCase):
     self.assertTrue(request.uri == '/')
     self.assertTrue(request.version == 'HTTP/1.1')
     self.assertTrue(len(request.headers) == 0)
+
 ##
 # vim: ts=2 sw=2 tw=100 et fdm=marker :
 ##
