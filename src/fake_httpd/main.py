@@ -72,6 +72,8 @@ from .config import (
   Config,
 )
 
+from .request import Request
+
 ## }}} ---- [ Imports ] ----------------------------------------------------------------------------
 
 # Program name
@@ -179,85 +181,6 @@ class Connection:
   ## }}}
 
 ## class Connection }}}
-
-## {{{ class Request
-
-class Request:
-
-  uuid = None
-  remote_addr = None
-  timestamp = None
-  raw = None
-  invalid = None
-  method = None
-  uri = None
-  version = None
-  headers = None
-
-  ## {{{ Request.__init__()
-  def __init__(self, uuid, remote_addr):
-    self.uuid = uuid
-    self.timestamp = int(datetime.utcnow().timestamp())
-    self.remote_addr = remote_addr
-    self.invalid = False
-  ## }}}
-
-  ## {{{ Request.to_dict()
-  def to_dict(self):
-    dict = {
-      'uuid': self.uuid,
-      'remote_addr': self.remote_addr,
-      'invalid': self.invalid,
-    }
-
-    for attr in ['timestamp', 'raw', 'method', 'uri', 'version', 'headers']:
-      value = getattr(self, attr)
-      if value:
-        dict[attr] = value
-
-    return dict
-  ## }}}
-
-  ## {{{ Request.parse()
-  def parse(self, buf):
-    self.raw = buf
-
-    request, headers = self.raw.split('\r\n', 1)
-    if request.count(' ') != 2:
-      self.invalid = True
-      return
-
-    method, uri, version = request.split(' ')
-    self.method = method
-    self.uri = uri
-    self.version = version
-
-    valid_methods = ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'TRACE', 'CONNECT']
-    if method not in valid_methods:
-      self.invalid = True
-      return
-
-    if headers.endswith('\r\n\r\n'):
-      headers = headers[:-4]
-    else:
-      perr('DEBUG: Request.parse() called incomplete request!')
-      self.invalid = True
-      return
-
-    self.headers = {}
-    for header in headers.split('\r\n'):
-      if not header:
-        continue
-
-      if header.count(': ') < 1:
-        self.invalid = True
-        return
-
-      name, value = header.split(': ', 1)
-      self.headers[name] = value
-  ## }}}
-
-## class Request }}}
 
 ## {{{ class FakeHttpd
 
