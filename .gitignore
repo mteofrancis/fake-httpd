@@ -4,6 +4,9 @@
 # Python 3's compiled bytecode
 __pycache__
 
+# Automatically generated files
+src/fake_httpd/version.py
+
 # Distribution files (source, wheel etc.)
 build
 dist

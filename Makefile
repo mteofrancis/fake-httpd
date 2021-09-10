@@ -3,10 +3,14 @@ SHELL = /bin/bash
 FIND	= $(shell type -P find)
 RM	= $(shell type -P rm)
 PYTHON	= $(shell type -P python)
+SED	= $(shell type -P sed)
 TWINE	= $(shell type -P twine)
 XARGS	= $(shell type -P xargs)
 
+include version.mk
+
 PACKAGE_NAME = fake-httpd
+PACKAGE_VERSION = $(MAJOR_VERSION).$(MINOR_VERSION).$(PATCH_VERSION)$(EXTRA_VERSION)
 
 ALL_TARGETS = build
 
@@ -33,8 +37,17 @@ run-testsuite:
 	@$(PYTHON) setup.py nosetests
 
 .PHONY: build
-build:
+build: src/fake_httpd/version.py
 	@$(PYTHON) -m build
+
+src/fake_httpd/version.py: src/fake_httpd/version.py.in
+	@$(SED) \
+	  -e 's,@PACKAGE_VERSION@,$(PACKAGE_VERSION),g' \
+	  -e 's,@MAJOR_VERSION@,$(MAJOR_VERSION),g' \
+	  -e 's,@MINOR_VERSION@,$(MINOR_VERSION),g' \
+	  -e 's,@PATCH_VERSION@,$(PATCH_VERSION),g' \
+	  -e 's,@EXTRA_VERSION@,$(EXTRA_VERSION),g' \
+	  < $< > $@
 
 .PHONY: upload
 upload:
@@ -48,6 +61,7 @@ install:
 clean:
 	@$(FIND) . -type d -name __pycache__ -print0 |$(XARGS) -0 $(RM) -rf
 	@$(RM) -rf src/$(PACKAGE_NAME).egg-info
+	@$(RM) -f src/fake_httpd/version.py
 
 .PHONY: distclean
 distclean: clean

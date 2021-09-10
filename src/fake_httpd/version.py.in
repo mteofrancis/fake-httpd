@@ -2,23 +2,23 @@
 # -*- coding: utf-8 -*-
 
 ##
-# fake-httpd.git:/version.py
+# mteo-util.git:/src/fake_httpd/version.py.in
 ##
 
 # Major version number
-MAJOR = 0
+MAJOR = @MAJOR_VERSION@
 
 # Minor version number
-MINOR = 0
+MINOR = @MINOR_VERSION@
 
 # Patch level
-PATCH = 2
+PATCH = @PATCH_VERSION@
 
 # Extra version information
-EXTRA = 'rc9'
+EXTRA = '@EXTRA_VERSION@'
 
 def get():
-  return f'{MAJOR}.{MINOR}.{PATCH}{EXTRA}'
+  return '@PACKAGE_VERSION@'
 
 ##
 # vim: ts=2 sw=2 tw=100 et fdm=marker :
