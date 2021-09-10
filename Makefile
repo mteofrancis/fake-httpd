@@ -31,7 +31,7 @@ check-syntax:
 	fi
 
 .PHONY: run-testsuite
-run-testsuite:
+run-testsuite: src/fake_httpd/version.py
 	@echo "Running test suite..."
 	@echo
 	@$(PYTHON) setup.py nosetests
